@@ -1,192 +1,102 @@
-# FullStack_Project 🚀
+# Yapster
 
-A starter full-stack web application scaffold containing a backend API and a frontend client. This README explains the repository layout, development setup, testing, deployment notes, and how to contribute - now with emojis for readability and friendliness 😄.
+A real-time chat application — **Socket.IO** messaging over an **Express +
+MongoDB** API, with a **React + Vite** client, JWT authentication and image
+sharing through Cloudinary.
 
----
+**Live:** <https://full-stack-project-azure.vercel.app>
 
-Table of Contents 📚
-- Project overview 🔍
-- Repository structure 🗂️
-- Tech stack 🧰
-- Requirements ✅
-- Getting started ▶️
-  - Clone 🧾
-  - Backend ⚙️
-  - Frontend 🎛️
-- Environment variables 🔐
-- Database & seeds 🗄️
-- Scripts 🏷️
-- Testing 🧪
-- Linting & formatting 🧹
-- Docker (optional) 🐳
-- Deployment 🚢
-- Contributing 🤝
-- License 📄
-- Contact ✉️
+## Features
 
----
+- **Real-time messaging** — messages arrive over a Socket.IO connection, with a
+  server-side `userSocketMap` tracking who is currently online
+- **Online presence** — the sidebar reflects connected users live
+- **Authentication** — signup and login issuing a JWT, verified by an auth
+  middleware on every protected route
+- **Media messages** — image uploads stored on Cloudinary rather than in the
+  database
+- **Profile management** — display name, bio and avatar
+- **Seen state** — messages are marked as seen when the conversation is opened
 
-Project overview 🔍
-This repository provides a typical full-stack app layout intended as a starting point for building web applications. It contains conventions and examples for running locally, testing, linting, and deploying. Update the folder names, commands, and example environment variables to match your actual code if they differ.
+## Stack
 
-Repository structure (example) 🗂️
-- /backend or /server - backend API (Node/Express, Nest, etc.) 🧩
-- /frontend or /client - frontend app (React, Vite, Next, etc.) 🖥️
-- /scripts  automation scripts (optional) 🔁
-- .env.example - example environment variables 🧾
-- README.md - this file 📘
+| Layer | Technology |
+|---|---|
+| Client | React 19, Vite, React Router, Context API |
+| Realtime | Socket.IO |
+| API | Node.js, Express |
+| Database | MongoDB with Mongoose |
+| Auth | JSON Web Tokens, bcrypt |
+| Media | Cloudinary |
 
-Tech stack (example) 🧰
-- Backend: Node.js, Express (or another server framework) ⚙️
-- Frontend: React (Create React App, Vite, Next.js, etc.) ✨
-- Database: PostgreSQL / MongoDB (choose the one you use) 🗄️
-- Auth: JSON Web Tokens (JWT) or session-based auth 🔑
-- Tooling: npm / yarn, ESLint, Prettier, Jest / Vitest 🛠️
+## Architecture
 
-Requirements ✅
-- Node.js 14+ (or the version your project requires) 🟢
-- npm (or yarn) 📦
-- Docker & Docker Compose (optional, recommended for local databases) 🐳
-- A database (Postgres, MongoDB) depending on your chosen stack 🗄️
+```
+client/                     React + Vite
+├── context/
+│   ├── AuthContext.jsx     token, current user, socket lifecycle
+│   └── ChatContext.jsx     conversations, messages, unseen counts
+├── pages/                  Home · Login · Profile
+└── components/             Sidebar · ChatContainer · RightSidebar
 
-Getting started ▶️
-
-1) Clone the repository 🧾
-```bash
-git clone https://github.com/sainKunal/FullStack_Project.git
-cd FullStack_Project
+server/                     Express
+├── controllers/            userController · messageController
+├── middleware/auth.js      JWT verification
+├── models/                 User · Message
+├── routes/                 /api/auth · /api/messages
+├── lib/                    db.js · cloudinary.js · utils.js
+└── server.js               HTTP server + Socket.IO, userSocketMap
 ```
 
-2) Determine which folders hold the backend and frontend (examples below assume `backend/` and `frontend/`).
+## Run it locally
 
-Backend (example) ⚙️
+**1. Server**
+
 ```bash
-cd backend
-# install deps
+cd server
 npm install
-# create .env from .env.example and set variables
-cp .env.example .env
-# run in development
-npm run dev
-# or
-npm start
+npm run server        # http://localhost:5000
 ```
 
-Frontend (example) 🎛️
-```bash
-cd frontend
-npm install
-# create .env from frontend/.env.example if provided
-cp .env.example .env
-# start dev server
-npm start
-# or for Vite
-npm run dev
-```
+Create `server/.env`:
 
-Open the frontend in your browser (typically http://localhost:3000) and ensure backend is running on its configured port (e.g., 4000).
-
-Environment variables 🔐
-Create a `.env` file from the provided `.env.example` files in backend/frontend. Do not commit `.env` to the repository.
-
-Example backend `.env`
-```
-PORT=4000
-DATABASE_URL=postgres://user:password@localhost:5432/dbname
+```env
+MONGODB_URI=your_mongodb_connection_string
+PORT=5000
 JWT_SECRET=your_jwt_secret
-NODE_ENV=development
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Example frontend `.env` (Create React App/Vite)
-```
-VITE_API_URL=http://localhost:4000/api
-# or
-REACT_APP_API_URL=http://localhost:4000/api
-```
+**2. Client**
 
-Database & seeds 🗄️
-- If using migrations (Prisma, TypeORM, Sequelize, Knex), run migrations before starting:
 ```bash
-# example
-npx prisma migrate deploy
-# or
-npm run migrate
-```
-- To seed:
-```bash
-npm run seed
-```
-If you're using Docker Compose, you can include a service for the DB and run:
-```bash
-docker-compose up -d
+cd client
+npm install
+npm run dev           # http://localhost:5173
 ```
 
-Scripts (example package.json scripts) 🏷️
-- start - start production server ▶️
-- dev - start development server with hot-reload 🔁
-- build - build for production (frontend) 🏗️
-- test - run tests 🧪
-- lint - run linter 🧹
-- format - run Prettier 🎨
+Create `client/.env`:
 
-Testing 🧪
-Run tests for backend and frontend separately (depending on where each test suite lives):
-
-Backend
-```bash
-cd backend
-npm test
+```env
+VITE_BACKEND_URL=http://localhost:5000
 ```
 
-Frontend
-```bash
-cd frontend
-npm test
-```
+> Keep both `.env` files out of version control — they hold live credentials.
 
-Linting & formatting 🧹
-If configured:
-```bash
-# lint project (run from repo root or appropriate folder)
-npm run lint
+## API
 
-# format
-npm run format
-```
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/auth/signup` | Create an account |
+| `POST` | `/api/auth/login` | Log in, receive a JWT |
+| `GET`  | `/api/auth/check` | Validate the current token |
+| `PUT`  | `/api/auth/update-profile` | Update profile and avatar |
+| `GET`  | `/api/messages/users` | Sidebar users with unseen counts |
+| `GET`  | `/api/messages/:id` | Conversation with one user |
+| `PUT`  | `/api/messages/mark/:id` | Mark a message as seen |
+| `POST` | `/api/messages/send/:id` | Send a message |
+| `GET`  | `/api/status` | Health check |
 
-Docker (optional) 🐳
-Add a `Dockerfile` for backend and frontend plus a `docker-compose.yml` to orchestrate the app and a database for local development. Example (abstract):
-- docker-compose.yml: backend, frontend (optional), db
-- Build and run:
-```bash
-docker-compose up --build
-```
-
-Deployment 🚢
-- Backend: Deploy to providers like Heroku, Render, AWS ECS, DigitalOcean Apps, or Docker-based hosts.
-- Frontend: Deploy static build to Vercel, Netlify, or serve via CDN.
-- Common workflow:
-  - Build frontend: `npm run build` (in frontend)
-  - Set environment variables in the target environment
-  - Use CI to run tests, linting, and publish artifacts
-
-Contributing 🤝
-Contributions are welcome. Please:
-- Open an issue for bug reports or feature requests 🐞
-- Fork the repository and create a branch for changes 🌿
-- Make small, focused commits with clear messages ✍️
-- Add tests for new features or bug fixes 🧪
-- Submit a pull request describing changes and linking related issues 🔗
-
-License 📄
-Add a license file (e.g., MIT). If you want MIT, include a LICENSE file with MIT text and add a short notice here.
-
-Contact ✉️
-Repository owner: https://github.com/sainKunal
-
----
-
-Notes 📝
-- Replace placeholder names, ports, and commands with those used in your project.
-- Add or update `.env.example` files for both backend and frontend to make onboarding easier.
-- Emojis were added to improve readability and friendliness - feel free to adjust or remove any you don't like 😊
+Every route except `signup`, `login` and `status` is behind `protectRoute`.
